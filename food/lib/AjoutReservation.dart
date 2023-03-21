@@ -1,15 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:food/ServicePreference.dart';
+import 'package:food/clients.dart';
+import 'package:food/model/myclient.dart';
+import 'package:food/model/myreservation.dart';
+import 'package:food/service/client_service.dart';
 import 'package:food/social-Page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart';
 import 'delayed_animation.dart';
 import 'package:food/main.dart';
 import 'login_page.dart';
 import 'Menu.dart';
+import 'package:food/service/reservation_service.dart';
 
- class MainMenuPage extends StatelessWidget {
-  
+
+
+
+ class AjoutReservation extends StatelessWidget {
+  TextEditingController controllerPrenom=TextEditingController();
+    TextEditingController controllerNom=TextEditingController();
+    ReservationService reservationService = ReservationService();
+    TextEditingController controllerDateArrivee=TextEditingController();
+    TextEditingController controllerDateDepart=TextEditingController();
+    TextEditingController controllerTarif=TextEditingController();
+    TextEditingController controllerNumChambre=TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,9 +55,9 @@ import 'Menu.dart';
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children:[
                     delayedAnimation(
-                      delay: 1500, 
+                      delay: 10, 
                       child: Text(
-                        'Entrer les Informations de votre Hotel',
+                        'Entrer les informations du client',
                         style:GoogleFonts.poppins(
                           color: d_red,
                           fontSize: 25,
@@ -50,17 +66,24 @@ import 'Menu.dart';
                         
                       ),
                       ),
-
+                 
                   ],
                 ),
               ),
-               SizedBox(height:10),
+               SizedBox(height:35),
 
-               loginForm(),
+               loginForm(
+                  controllerNom: controllerNom,
+                  controllerPrenom: controllerPrenom,
+                  controllerDateArrivee: controllerDateArrivee,
+                  controllerDateDepart: controllerDateDepart,
+                  controllerTarif: controllerTarif,
+                  controllerNumChambre: controllerNumChambre,
+               ),
     
-               SizedBox(height:15),
+               SizedBox(height:125),
                delayedAnimation(
-                delay: 1000, 
+                delay: 100, 
                 child : ElevatedButton(
                   
                   style:ElevatedButton.styleFrom(
@@ -80,12 +103,23 @@ import 'Menu.dart';
                       ),
                       ),
                       onPressed: (){
-                        Navigator.push(
-                          context, 
-                        MaterialPageRoute(
-                        builder: (context) => Menu(),
-                        ),
-                        );
+                         String nom=controllerNom.text;
+                          String prenom=controllerPrenom.text;
+                        String date_arrivee=controllerDateArrivee.text;
+                        String date_depart=controllerDateDepart.text;
+                        String tarif=controllerDateDepart.text;
+                         int num_chambre=int.parse(controllerNumChambre.text);
+                        reservationService.addReservation(
+                          MyReservation(
+                            nom: nom,
+                            prenom: prenom,
+                          date_arrivee: date_arrivee,
+                          date_depart: date_depart,
+                          tarif: tarif,
+                          num_chambre: num_chambre,
+                        ));
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=>client()));
+
                       },
                 ),
                 ),
@@ -98,7 +132,7 @@ import 'Menu.dart';
                         padding:EdgeInsets.only(right:35),
                           child:TextButton(
                             onPressed: () {
-                              passerAInscrit();
+                               passerAInscrit();
                               Navigator.push(context,MaterialPageRoute(builder:(context)=>socialPage()));
                             },
                             child :delayedAnimation(
@@ -123,7 +157,7 @@ import 'Menu.dart';
                               Navigator.pop(context);
                             },
                             child :delayedAnimation(
-                              delay:6500,
+                              delay:100,
                               child:Text(
                                 "SKIP",
                                 style: GoogleFonts.poppins(
@@ -136,6 +170,7 @@ import 'Menu.dart';
                           ),
                             
                           ),
+                         
                     ],
                   ),
                     ),
@@ -144,8 +179,11 @@ import 'Menu.dart';
         ) ,
       );
     
+ 
   }
-  Future<void> passerAInscrit() async {
+ 
+
+   Future<void> passerAInscrit() async {
     print('Debut inscription');
     final prefs= await ServicePreferences.pref;
     (await prefs).setBool('inscrit', false);
@@ -155,8 +193,25 @@ import 'Menu.dart';
 
 
 class loginForm extends StatefulWidget {
-@override
-  State<loginForm> createState() => _loginFormState();
+
+    TextEditingController controllerPrenom=TextEditingController();
+    TextEditingController controllerNom=TextEditingController();
+    TextEditingController controllerDateArrivee=TextEditingController();
+    TextEditingController controllerDateDepart=TextEditingController();
+    TextEditingController controllerTarif=TextEditingController();
+    TextEditingController controllerNumChambre=TextEditingController();
+
+  loginForm({
+    required this.controllerNom,
+    required this.controllerPrenom,
+     required this.controllerDateArrivee,
+    required this.controllerDateDepart,
+    required this.controllerTarif,
+    required this.controllerNumChambre,
+    Key ? key
+  }):super(key: key);
+  @override
+    State<loginForm> createState() => _loginFormState();
 }
 
 class _loginFormState extends State<loginForm> {
@@ -165,82 +220,121 @@ class _loginFormState extends State<loginForm> {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(
-      horizontal:10,
+      horizontal:30,
       ),
         child:Column(
           children:[
             delayedAnimation(
-            delay: 1500,
+            delay: 100,
              child: TextField(
+              controller: widget.controllerNom,
               decoration:InputDecoration(
-                labelText:"Entrer le nom de votre hotel",
+                labelText:'Entrer le nom',
                 labelStyle: TextStyle(
                   color:Colors.grey[400],
                 ),
               ),
              ),
              ),
-            SizedBox(height:10),
+
+            SizedBox(height:30),
             delayedAnimation(
-              delay: 1500, 
+              delay: 100, 
               child: TextField(
+                controller: widget.controllerPrenom,
                 obscureText: _obscureText,
                 decoration:InputDecoration(
                   labelStyle:TextStyle(
                     color:Colors.grey[400],
                 ),
-                labelText:"snombre d'étage",
+                labelText:'Entrer le prenom',
+                suffixIcon:IconButton(
+                    icon:Icon(
+                      Icons.visibility,
+                      color:Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText= !_obscureText;
+                      });
+                    },
+                    ),
+                ),
+                ),
+              ),
+
+            SizedBox(height:30),
+            delayedAnimation(
+              delay: 100, 
+              child: TextField(
+                controller: widget.controllerDateArrivee,
+                obscureText: _obscureText,
+                decoration:InputDecoration(
+                  labelStyle:TextStyle(
+                    color:Colors.grey[400],
+                ),
+                labelText:'Entrer la date d arrivee',
+                suffixIcon:IconButton(
+                    icon:Icon(
+                      Icons.visibility,
+                      color:Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText= !_obscureText;
+                      });
+                    },
+                    ),
+                ),
+                ),
+              ),
+            SizedBox(height:30),
+            delayedAnimation(
+              delay: 100, 
+              child: TextField(
+                controller: widget.controllerDateDepart,
+                obscureText: _obscureText,
+                decoration:InputDecoration(
+                  labelStyle:TextStyle(
+                    color:Colors.grey[400],
+                ),
+                labelText:'entrer la date de depart',
+                suffixIcon:IconButton(
+                    icon:Icon(
+                      Icons.visibility,
+                      color:Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText= !_obscureText;
+                      });
+                    },
+                    ),
+                ),
+                ),
+              ),
+              SizedBox(height:30),
+                      delayedAnimation(
+            delay: 100,
+             child: TextField(
+              controller: widget.controllerTarif,
+              decoration:InputDecoration(
+                labelText:'adress du clients',
+                labelStyle: TextStyle(
+                  color:Colors.grey[400],
+                ),
+              ),
+             ),
+             ),
+              SizedBox(height:30),
+                      delayedAnimation(
+            delay: 100,
+             child: TextField(
+              controller: widget.controllerNumChambre,
+              
+              decoration:InputDecoration(
+                labelText:'Tephone du client',
                 
-                ),
-                ),
-              ),
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:"nombre de chambre par étage",
-                labelStyle: TextStyle(
-                  color:Colors.grey[400],
-                ),
-              ),
-             ),
-             ),
-
-              SizedBox(height:10),
-             
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:"Tarif normal economique",
-                labelStyle: TextStyle(
-                  color:Colors.grey[400],
-                ),
-              ),
-             ),
-             ),
-
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:'Tarif normal standart',
-                labelStyle: TextStyle(
-                  color:Colors.grey[400],
-                ),
-              ),
-             ),
-             ),
-
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:"tarif normal annexe",
                 labelStyle: TextStyle(
                   color:Colors.grey[400],
                 ),
@@ -252,7 +346,6 @@ class _loginFormState extends State<loginForm> {
             ) ;
        }
        
-
-
-
-}
+ 
+ 
+ }

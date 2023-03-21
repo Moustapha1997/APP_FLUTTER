@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:food/Gestion_Hotel.dart';
 import 'package:food/ServicePreference.dart';
+import 'package:food/reservation.dart';
 import 'package:food/social-Page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -9,14 +10,14 @@ import 'package:food/main.dart';
 import 'login_page.dart';
 import 'Chambre_Hotel.dart';
 import 'Gestion_Hotel.dart';
-import 'client.dart';
+import 'clients.dart';
 
 class Menu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-            title:Text('Menu Hotel'),
+            title:Text("MENU DE L'HOTEL"),
             backgroundColor: d_red,
         ) ,
         body:SingleChildScrollView(
@@ -25,7 +26,7 @@ class Menu extends StatelessWidget {
           
 
               delayedAnimation(
-                delay: 3500,
+                delay: 1000,
                child: Container(
                 margin:EdgeInsets.symmetric(
                   vertical:14,
@@ -42,7 +43,7 @@ class Menu extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -50,7 +51,13 @@ class Menu extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('GESTION DE L HOTEL'),
+                        Text(
+                          "GESTION DE L'HOTEL",
+                          style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -60,9 +67,9 @@ class Menu extends StatelessWidget {
                 ),
                ),
               ),
-                SizedBox(height:35),
+                SizedBox(height:10),
                           delayedAnimation(
-                delay: 3500,
+                delay: 1100,
                child: Container(
                 margin:EdgeInsets.symmetric(
                   vertical:14,
@@ -79,15 +86,23 @@ class Menu extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
+                        
                         mainAxisAlignment:MainAxisAlignment.center,
                       children: [
-                       
+                        FaIcon(FontAwesomeIcons.chalkboard),
                         SizedBox(width:10),
-                        Text('LES CHAMBRES'),
+                        Text(
+                          'LES CHAMBRES',
+                       style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+
+                        ),
                       ],
                      ),
                      ),
@@ -97,9 +112,9 @@ class Menu extends StatelessWidget {
                 ),
                ),
               ),
-                            SizedBox(height:35),
+                            SizedBox(height:10),
                           delayedAnimation(
-                delay: 3500,
+                delay: 1200,
                child: Container(
                 margin:EdgeInsets.symmetric(
                   vertical:14,
@@ -116,7 +131,7 @@ class Menu extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -124,7 +139,13 @@ class Menu extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('LES CLIENTS'),
+                        Text(
+                          'LES CLIENTS',
+                          style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -134,9 +155,52 @@ class Menu extends StatelessWidget {
                 ),
                ),
               ),
-                              SizedBox(height:35),
+                              SizedBox(height:10),
                           delayedAnimation(
-                delay: 3500,
+                delay: 1300,
+               child: Container(
+                margin:EdgeInsets.symmetric(
+                  vertical:14,
+                  horizontal: 40,
+                ),
+                child:Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                      
+                        Navigator.push(context, MaterialPageRoute(builder:(context)=>reservation(),
+                        ),
+                        );
+                      },
+                      style:ElevatedButton.styleFrom(
+                        shape:StadiumBorder(),
+                        primary:Colors.white,
+                        padding:EdgeInsets.all(13),
+                        ),
+                      child: Row(
+                        mainAxisAlignment:MainAxisAlignment.center,
+                      children: [
+                       
+                        SizedBox(width:10),
+                        Text(
+                          'LES RESERVATIONS',
+                          style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
+                      ],
+                     ),
+                     ),
+                   
+               
+                ],
+                ),
+               ),
+              ),
+                              SizedBox(height:10),
+                          delayedAnimation(
+                delay: 1400,
                child: Container(
                 margin:EdgeInsets.symmetric(
                   vertical:14,
@@ -153,7 +217,7 @@ class Menu extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -161,7 +225,13 @@ class Menu extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('LES RESERVATIONS'),
+                        Text(
+                          'LES FACTURES',
+                          style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -171,46 +241,9 @@ class Menu extends StatelessWidget {
                 ),
                ),
               ),
-                              SizedBox(height:35),
-                          delayedAnimation(
-                delay: 3500,
-               child: Container(
-                margin:EdgeInsets.symmetric(
-                  vertical:14,
-                  horizontal: 40,
-                ),
-                child:Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                      
-                        Navigator.push(context, MaterialPageRoute(builder:(context)=>loginPage(),
-                        ),
-                        );
-                      },
-                      style:ElevatedButton.styleFrom(
-                        shape:StadiumBorder(),
-                        primary:d_red,
-                        padding:EdgeInsets.all(13),
-                        ),
-                      child: Row(
-                        mainAxisAlignment:MainAxisAlignment.center,
-                      children: [
-                       
-                        SizedBox(width:10),
-                        Text('LES FACTURES'),
-                      ],
-                     ),
-                     ),
-                   
-               
-                ],
-                ),
-               ),
-              ),
-              SizedBox(height:35),
+              SizedBox(height:10),
               delayedAnimation(
-                delay: 3500,
+                delay: 1500,
                 child: Container(
                 margin:EdgeInsets.symmetric(
                 vertical:14,
@@ -227,15 +260,21 @@ class Menu extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
-                        padding:EdgeInsets.all(13),
+                        primary:Colors.white,
+                        padding:EdgeInsets.all(15),
                         ),
                       child: Row(
                         mainAxisAlignment:MainAxisAlignment.center,
                       children: [
                        
-                        SizedBox(width:10),
-                        Text('LES STATISTIQUES'),
+                        SizedBox(width:1),
+                        Text(
+                          'LES STATISTIQUES',
+                          style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),

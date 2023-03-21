@@ -38,7 +38,7 @@ class ChambreHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -46,7 +46,13 @@ class ChambreHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('LISTE DES CHAMBRE LIBRE'),
+                        Text(
+                          'LISTE DES CHAMBRE LIBRE',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -75,7 +81,7 @@ class ChambreHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -83,7 +89,13 @@ class ChambreHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('LISTES DES CHAMBRE OCCUPEES'),
+                        Text(
+                          'LISTES DES CHAMBRE OCCUPEES',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -112,7 +124,7 @@ class ChambreHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -120,7 +132,13 @@ class ChambreHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('LISTE DES CHAMBRE RESERVEES'),
+                        Text(
+                          'LISTE DES CHAMBRE RESERVEES',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -149,7 +167,7 @@ class ChambreHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -157,7 +175,13 @@ class ChambreHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('MODIFIE LA CLASSE D UN CHAMBRE'),
+                        Text(
+                          'MODIFIE LA CLASSE D UN CHAMBRE',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),

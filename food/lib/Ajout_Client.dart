@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:food/ServicePreference.dart';
+import 'package:food/clients.dart';
+import 'package:food/model/myclient.dart';
+import 'package:food/service/client_service.dart';
 import 'package:food/social-Page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart';
 import 'delayed_animation.dart';
 import 'package:food/main.dart';
 import 'login_page.dart';
 import 'Menu.dart';
 
- class MainMenuPage extends StatelessWidget {
-  
+
+ class AjoutClient extends StatelessWidget {
+    ClientService clientService = ClientService();
+    TextEditingController controllerPrenom=TextEditingController();
+    TextEditingController controllerNom=TextEditingController();
+    TextEditingController controllerTelephone=TextEditingController();
+    TextEditingController controllerAdresse=TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,9 +49,9 @@ import 'Menu.dart';
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children:[
                     delayedAnimation(
-                      delay: 1500, 
+                      delay: 10, 
                       child: Text(
-                        'Entrer les Informations de votre Hotel',
+                        'Entrer les informations du client',
                         style:GoogleFonts.poppins(
                           color: d_red,
                           fontSize: 25,
@@ -50,17 +60,22 @@ import 'Menu.dart';
                         
                       ),
                       ),
-
+                 
                   ],
                 ),
               ),
-               SizedBox(height:10),
+               SizedBox(height:35),
 
-               loginForm(),
+               loginForm(
+                  controllerPrenom: controllerPrenom,
+                  controllerNom: controllerNom,
+                  controllerAdresse: controllerAdresse,
+                  controllerTelephone: controllerTelephone,
+               ),
     
-               SizedBox(height:15),
+               SizedBox(height:125),
                delayedAnimation(
-                delay: 1000, 
+                delay: 100, 
                 child : ElevatedButton(
                   
                   style:ElevatedButton.styleFrom(
@@ -80,12 +95,18 @@ import 'Menu.dart';
                       ),
                       ),
                       onPressed: (){
-                        Navigator.push(
-                          context, 
-                        MaterialPageRoute(
-                        builder: (context) => Menu(),
-                        ),
-                        );
+                        String prenom=controllerPrenom.text;
+                        String nom=controllerNom.text;
+                        String adresse=controllerAdresse.text;
+                        int telephone=int.parse(controllerTelephone.text);
+                        clientService.addClient(MyClient(
+                          prenom: prenom,
+                          nom: nom,
+                          adresse: adresse,
+                          telephone: telephone,
+                        ));
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=>client()));
+
                       },
                 ),
                 ),
@@ -123,7 +144,7 @@ import 'Menu.dart';
                               Navigator.pop(context);
                             },
                             child :delayedAnimation(
-                              delay:6500,
+                              delay:100,
                               child:Text(
                                 "SKIP",
                                 style: GoogleFonts.poppins(
@@ -136,6 +157,7 @@ import 'Menu.dart';
                           ),
                             
                           ),
+                         
                     ],
                   ),
                     ),
@@ -145,6 +167,11 @@ import 'Menu.dart';
       );
     
   }
+
+
+
+
+
   Future<void> passerAInscrit() async {
     print('Debut inscription');
     final prefs= await ServicePreferences.pref;
@@ -155,8 +182,21 @@ import 'Menu.dart';
 
 
 class loginForm extends StatefulWidget {
-@override
-  State<loginForm> createState() => _loginFormState();
+
+  TextEditingController controllerPrenom=TextEditingController();
+  TextEditingController controllerNom=TextEditingController();
+  TextEditingController controllerTelephone=TextEditingController();
+  TextEditingController controllerAdresse=TextEditingController();
+
+  loginForm({
+    required this.controllerPrenom,
+    required this.controllerNom,
+    required this.controllerAdresse,
+    required this.controllerTelephone,
+    Key ? key
+  }):super(key: key);
+  @override
+    State<loginForm> createState() => _loginFormState();
 }
 
 class _loginFormState extends State<loginForm> {
@@ -165,82 +205,69 @@ class _loginFormState extends State<loginForm> {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(
-      horizontal:10,
+      horizontal:30,
       ),
         child:Column(
           children:[
             delayedAnimation(
-            delay: 1500,
+            delay: 100,
              child: TextField(
+              controller: widget.controllerNom,
               decoration:InputDecoration(
-                labelText:"Entrer le nom de votre hotel",
+                labelText:'Entrer la date darriver',
                 labelStyle: TextStyle(
                   color:Colors.grey[400],
                 ),
               ),
              ),
              ),
-            SizedBox(height:10),
+            SizedBox(height:30),
             delayedAnimation(
-              delay: 1500, 
+              delay: 100, 
               child: TextField(
+                controller: widget.controllerPrenom,
                 obscureText: _obscureText,
                 decoration:InputDecoration(
                   labelStyle:TextStyle(
                     color:Colors.grey[400],
                 ),
-                labelText:"snombre d'étage",
+                labelText:'entrer la date de depart',
+                suffixIcon:IconButton(
+                    icon:Icon(
+                      Icons.visibility,
+                      color:Colors.black,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscureText= !_obscureText;
+                      });
+                    },
+                    ),
+                ),
+                ),
+              ),
+              SizedBox(height:30),
+                      delayedAnimation(
+            delay: 100,
+             child: TextField(
+              controller: widget.controllerAdresse,
+              decoration:InputDecoration(
+                labelText:'adress du clients',
+                labelStyle: TextStyle(
+                  color:Colors.grey[400],
+                ),
+              ),
+             ),
+             ),
+              SizedBox(height:30),
+                      delayedAnimation(
+            delay: 100,
+             child: TextField(
+              controller: widget.controllerTelephone,
+              
+              decoration:InputDecoration(
+                labelText:'Tephone du client',
                 
-                ),
-                ),
-              ),
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:"nombre de chambre par étage",
-                labelStyle: TextStyle(
-                  color:Colors.grey[400],
-                ),
-              ),
-             ),
-             ),
-
-              SizedBox(height:10),
-             
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:"Tarif normal economique",
-                labelStyle: TextStyle(
-                  color:Colors.grey[400],
-                ),
-              ),
-             ),
-             ),
-
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:'Tarif normal standart',
-                labelStyle: TextStyle(
-                  color:Colors.grey[400],
-                ),
-              ),
-             ),
-             ),
-
-              SizedBox(height:10),
-                      delayedAnimation(
-            delay: 1500,
-             child: TextField(
-              decoration:InputDecoration(
-                labelText:"tarif normal annexe",
                 labelStyle: TextStyle(
                   color:Colors.grey[400],
                 ),

@@ -38,7 +38,7 @@ class GestionHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -46,7 +46,13 @@ class GestionHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('MODIFIER LE NOM DE L HOTEL'),
+                        Text(
+                          'MODIFIER LE NOM DE L HOTEL',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -75,7 +81,7 @@ class GestionHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -83,7 +89,13 @@ class GestionHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('MODIFIER LES TARIF'),
+                        Text(
+                          'MODIFIER LES TARIF',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -112,7 +124,7 @@ class GestionHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -120,7 +132,13 @@ class GestionHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('REINITIALISER L HOTEL'),
+                        Text(
+                          'REINITIALISER L HOTEL',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
@@ -149,7 +167,7 @@ class GestionHotel extends StatelessWidget {
                       },
                       style:ElevatedButton.styleFrom(
                         shape:StadiumBorder(),
-                        primary:d_red,
+                        primary:Colors.white,
                         padding:EdgeInsets.all(13),
                         ),
                       child: Row(
@@ -157,7 +175,13 @@ class GestionHotel extends StatelessWidget {
                       children: [
                        
                         SizedBox(width:10),
-                        Text('LES COULEURS'),
+                        Text(
+                          'LES COULEURS',
+                           style:GoogleFonts.poppins(
+                            color:d_red,
+                            fontSize:16,
+                            fontWeight: FontWeight.w500,),
+                          ),
                       ],
                      ),
                      ),
