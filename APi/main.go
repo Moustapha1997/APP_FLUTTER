@@ -3,305 +3,415 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"log"
+
+	"fmt"
 	"net/http"
 	"strconv"
-	"time"
+	"strings"
 
-	_ "github.com/denisenkom/go-mssqldb"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
 type Client struct {
-	id_client        int
-	Nom_client       string
-	Prenom_client    string
-	Adresse_client   string
-	Telephone_client int
+	Id_client        int    `json:"id_client"`
+	Nom_client       string `json:"nom_client"`
+	Prenom_client    string `json:"prenom_client"`
+	Adresse_client   string `json:"adresse_client"`
+	Telephone_client int    `json:"telephone_client"`
 }
-type Reservation struct {
-	ID_reservation int
-	Date_arrivee   time.Time
-	Date_depart    time.Time
-	Type_tarif     string // Ou un type enum, si votre base de données le permet
-	ID_client      int
-	Num_chambre    int
-}
-
-type Chambre struct {
-	Num_chambre  int
-	ID_etage     int
-	ID_categorie int
-	Statut       string // Ou un type enum, si votre base de données le permet
-	Nom_hotel    string
+type reservation struct {
+	Id_reservation int    `json:"id_reservation"`
+	Date_arrivee   string `json:"date_arrivee"`
+	Date_depart    string `json:"date_depart"`
+	Type_tarif     string `json:"type_tarif"`
+	Id_client      int    `json:"id_client"`
+	Num_chambre    int    `json:"num_chambre"`
 }
 
-type Hotel struct {
-	Nom_hotel            string
-	Nb_etages            int
-	Nb_chambre_par_etage int
+type categorie struct {
+	Idcategorie    int     `json:"id_categorie"`
+	Nom_categorie  string  `json:"nom_categorie"`
+	Tarif_unitaire float64 `json:"tarif_unitaire"`
+	Num_chambre    int     `json:"num_chambre"`
 }
 
-type Categorie struct {
-	ID_categorie   int
-	Nom_categorie  string // Ou un type enum, si votre base de données le permet
-	Tarif_unitaire int
+type etage struct {
+	Id_etage int `json:"id_etage"`
 }
-
-type Service struct {
-	ID_service     int
-	Nom_service    string // Ou un type enum, si votre base de données le permet
-	ID_reservation int
-	Nom_hotel      string
+type hotel struct {
+	Nom_hotel             string `json:"nom_hotel"`
+	Id_etage              int    `json:"id_etage"`
+	Nb_etages             int    `json:"nb_etages"`
+	Nb_chambres_par_etage int    `json:"nb_chambres_par_etage"`
 }
-
-type Etage struct {
-	ID_etage int
+type chambre struct {
+	Num_chambre int            `json:"num_chambre"`
+	Id_etage    int            `json:"id_etage"`
+	Idcategorie int            `json:"id_categorie"`
+	Nom_hotel   sql.NullString `json:"nom_hotel"`
+}
+type service struct {
+	Id_service     int            `json:"id_service"`
+	Nom_service    string         `json:"nom_service"`
+	Tarif_unitaire float64        `json:"tarif_unitaire"`
+	Id_reservation sql.NullInt64  `json:"id_reservation,omitempty"`
+	Nom_hotel      sql.NullString `json:"nom_hotel,omitempty"`
 }
 
 func main() {
-	// les données de notre serveur proxy SQL
-	server := "proxyserver"
-	port := 6032
-	user := "cluster_admin"
-	password := "cluster_admin_password"
+	// les données de notre serveur MySQL
+
+	server := "localhost"
+	port := 3306
+	user := "mouhamed"
+	password := "passer"
 	database := "gestionhotel"
 
 	// Créez une chaîne de connexion
-	connString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s;", server, user, password, port, database)
+	connString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", user, password, server, port, database)
 
 	// Ouvrez une connexion
-	db, err := sql.Open("sqlserver", connString)
+	db, err := sql.Open("mysql", connString)
 	if err != nil {
-		panic(err.Error())
+		log.Fatal(err)
 	}
 
-	// Fermez la connexion lorsque vous avez terminé
+	// Vérifiez que la connexion est bien établie
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Fermez la connexion à la fin du programme
 	defer db.Close()
 
-	// Gestion de l'API REST pour les clients
+	// Afficher le message de succès
+	fmt.Println("Connexion réussie à la base de données")
+	// Créez un gestionnaire de requêtes HTTP
 	http.HandleFunc("/clients", func(w http.ResponseWriter, r *http.Request) {
-		// Vérifiez la méthode HTTP
 		if r.Method == "GET" {
-			// Exécutez une requête SQL pour récupérer tous les clients
-			rows, err := db.Query("SELECT * FROM clients")
+			// Récupérez tous les clients de la base de données
+			rows, err := db.Query("SELECT Id_client, nom_client, Prenom_client, Adresse_client, Telephone_client FROM client")
 			if err != nil {
-				log.Fatal(err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 			defer rows.Close()
 
-			// Créez une slice pour stocker les clients
-			clients := make([]Client, 0)
-
-			// Parcourez les lignes de résultats et stockez les clients dans la slice
+			// Parcourez les résultats de la requête et créez une liste de clients
+			clients := []Client{}
 			for rows.Next() {
-				client := Client{}
-				err := rows.Scan(&client.id_client, &client.Nom_client, &client.Prenom_client, &client.Adresse_client, &client.Telephone_client)
+				var client Client
+				err := rows.Scan(&client.Id_client, &client.Nom_client, &client.Prenom_client, &client.Adresse_client, &client.Telephone_client)
 				if err != nil {
-					log.Fatal(err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 				clients = append(clients, client)
 			}
-
-			// Encodez la slice de clients en JSON et envoyez la réponse
-			w.Header().Set("Content-Type", "application/json")
-			err = json.NewEncoder(w).Encode(clients)
-			if err != nil {
-				log.Fatal(err)
+			if err := rows.Err(); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
+
+			// Créez une réponse JSON avec la liste des clients
+			json.NewEncoder(w).Encode(clients)
 		} else if r.Method == "POST" {
-			// Lecture des données envoyées par le client
-			var client Client
-			err := json.NewDecoder(r.Body).Decode(&client)
+			// Récupérez le corps de la requête JSON
+			var newClient Client
+			err := json.NewDecoder(r.Body).Decode(&newClient)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
-			// Exécutez une requête SQL pour insérer un nouveau client
-			query := fmt.Sprintf("INSERT INTO clients(Nom_client, Prenom_client, Adresse_client, Telephone_client) VALUES ('%s', '%s', '%s', '%d')", client.Nom_client, client.Prenom_client, client.Adresse_client, client.Telephone_client)
-			_, err = db.Exec(query)
+			// Insérez le nouveau client dans la base de données
+			result, err := db.Exec("INSERT INTO client (nom_client, prenom_client, adresse_client, telephone_client) VALUES (?, ?, ?, ?)", newClient.Nom_client, newClient.Prenom_client, newClient.Adresse_client, newClient.Telephone_client)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			// Envoi de la réponse au client
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, "Le client a été ajouté avec succès.")
+			// Récupérez l'ID du nouveau client inséré
+			newID, err := result.LastInsertId()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Renvoyez une réponse JSON avec l'ID du nouveau client
+			response := map[string]int64{"id_client": newID}
+			json.NewEncoder(w).Encode(response)
 		} else if r.Method == "PUT" {
-			// Lecture des données envoyées par le client
-			var client Client
-			err := json.NewDecoder(r.Body).Decode(&client)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			// Exécutez une requête SQL pour mettre à jour le client existant
-			query := fmt.Sprintf("UPDATE clients SET Nom_client='%s', Prenom_client='%s', Adresse_client='%s', Telephone_client='%d' WHERE id_client=%d", client.Nom_client, client.Prenom_client, client.Adresse_client, client.Telephone_client, client.id_client)
-			_, err = db.Exec(query)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			// Envoi de la réponse au client
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "Le client a été mis à jour avec succès.")
-		} else if r.Method == "DELETE" {
-			// Lecture de l'ID du client à supprimer
+			// Récupérez l'ID du client à mettre à jour à partir de la requête URL
 			clientID := r.URL.Path[len("/clients/"):]
 
-			// Exécutez une requête SQL pour supprimer le client correspondant à l'ID
-			query := fmt.Sprintf("DELETE FROM clients WHERE id_client=%s", clientID)
-			result, err := db.Exec(query)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			// Vérifiez si un client a été supprimé et envoyez la réponse
-			rowsAffected, _ := result.RowsAffected()
-			if rowsAffected == 0 {
-				http.Error(w, "Le client n'existe pas.", http.StatusNotFound)
-				return
-			}
-
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, "Le client a été supprimé avec succès.")
-		} else {
-			// Méthode non autorisée
-			http.Error(w, "Méthode non autorisée.", http.StatusMethodNotAllowed)
-		}
-	})
-
-	// Démarrez le serveur
-	log.Fatal(http.ListenAndServe(":8080", nil))
-	// Handler pour l'ajout d'une nouvelle réservation de client
-	http.HandleFunc("/reservations", func(w http.ResponseWriter, r *http.Request) {
-		// Vérifiez la méthode HTTP
-		if r.Method == "POST" {
-			// Lecture des données envoyées par le client
-			var reservation Reservation
-			err := json.NewDecoder(r.Body).Decode(&reservation)
+			// Récupérez le corps de la requête JSON
+			var updatedClient Client
+			err := json.NewDecoder(r.Body).Decode(&updatedClient)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
-			// Vérification de la disponibilité de la chambre
-			rows, err := db.Query(fmt.Sprintf("SELECT * FROM chambres WHERE Num_chambre = %d AND Statut = 'libre'", reservation.Num_chambre))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			defer rows.Close()
-
-			if !rows.Next() {
-				http.Error(w, "La chambre n'est pas disponible", http.StatusBadRequest)
-				return
-			}
-
-			// Exécutez une requête SQL pour insérer une nouvelle réservation
-			query := fmt.Sprintf("INSERT INTO reservations(Date_arrivee, Date_depart, Type_tarif, ID_client, Num_chambre) VALUES ('%s', '%s', '%s', %d, %d)", reservation.Date_arrivee.Format("2006-01-02"), reservation.Date_depart.Format("2006-01-02"), reservation.Type_tarif, reservation.ID_client, reservation.Num_chambre)
-			_, err = db.Exec(query)
+			// Mettez à jour le client dans la base de données
+			result, err := db.Exec("UPDATE client SET nom_client = ?, prenom_client = ?, adresse_client = ?, telephone_client = ? WHERE id_client = ?", updatedClient.Nom_client, updatedClient.Prenom_client, updatedClient.Adresse_client, updatedClient.Telephone_client, clientID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			// Mettre à jour le statut de la chambre réservée
-			query = fmt.Sprintf("UPDATE chambres SET Statut = 'occupé' WHERE Num_chambre = %d", reservation.Num_chambre)
-			_, err = db.Exec(query)
+			// Renvoyez une réponse JSON avec le nombre de lignes modifiées
+			rowsAffected, err := result.RowsAffected()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			response := map[string]int64{"rows_affected": rowsAffected}
+			json.NewEncoder(w).Encode(response)
+		} else if r.Method == "DELETE" {
+			// Récupérez l'ID du client à supprimer à partir de la requête URL
+			clientID := r.URL.Path[len("/clients/"):]
+
+			// Supprimez le client dans la base de données
+			result, err := db.Exec("DELETE FROM client WHERE id_client = ?", clientID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			// Envoi de la réponse au client
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, "La réservation a été ajoutée avec succès.")
+			// Renvoyez une réponse JSON avec le nombre de lignes supprimées
+			rowsAffected, err := result.RowsAffected()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			response := map[string]int64{"rows_affected": rowsAffected}
+			json.NewEncoder(w).Encode(response)
 		}
 	})
+	// Méthode GET pour récupérer toutes les réservations
 	http.HandleFunc("/reservations", func(w http.ResponseWriter, r *http.Request) {
-		// Vérifiez la méthode HTTP
 		if r.Method == "GET" {
-			// Exécutez une requête SQL pour récupérer toutes les réservations
-			rows, err := db.Query("SELECT * FROM reservations")
+			// Récupérez toutes les réservations de la base de données
+			rows, err := db.Query("SELECT Id_reservation, Date_arrivee, Date_depart, Type_tarif, Id_client, Num_chambre FROM reservation")
 			if err != nil {
-				log.Fatal(err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 			defer rows.Close()
 
-			// Créez une slice pour stocker les réservations
-			reservations := make([]Reservation, 0)
-
-			// Parcourez les lignes de résultats et stockez les réservations dans la slice
+			// Parcourez les résultats de la requête et créez une liste de réservations
+			reservations := []reservation{}
 			for rows.Next() {
-				reservation := Reservation{}
-				err := rows.Scan(&reservation.ID_reservation, &reservation.Date_arrivee, &reservation.Date_depart, &reservation.Type_tarif, &reservation.ID_client, &reservation.Num_chambre)
+				var reservation reservation
+				err := rows.Scan(&reservation.Id_reservation, &reservation.Date_arrivee, &reservation.Date_depart, &reservation.Type_tarif, &reservation.Id_client, &reservation.Num_chambre)
 				if err != nil {
-					log.Fatal(err)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 				reservations = append(reservations, reservation)
 			}
-
-			// Encodez la slice de réservations en JSON et envoyez la réponse
-			w.Header().Set("Content-Type", "application/json")
-			err = json.NewEncoder(w).Encode(reservations)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			// Si la méthode HTTP n'est pas GET, renvoyez une erreur "Méthode non autorisée"
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		}
-	})
-	http.HandleFunc("/reservations/{id}", func(w http.ResponseWriter, r *http.Request) {
-		// Vérifiez la méthode HTTP
-		if r.Method == "PUT" {
-			// Récupérez l'ID de la réservation à modifier à partir des paramètres de l'URL
-			vars := mux.Vars(r)
-			reservationID, err := strconv.Atoi(vars["id"])
-			if err != nil {
-				http.Error(w, "Invalid reservation ID", http.StatusBadRequest)
+			if err := rows.Err(); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			// Decodez la requête JSON dans une struct Reservation
-			var reservation Reservation
-			err = json.NewDecoder(r.Body).Decode(&reservation)
+			// Créez une réponse JSON avec la liste des réservations
+			json.NewEncoder(w).Encode(reservations)
+		} else if r.Method == "POST" {
+			// Analyser le corps de la requête JSON dans une struct réservation
+			var res reservation
+			err := json.NewDecoder(r.Body).Decode(&res)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
-			// Exécutez une requête SQL pour mettre à jour la réservation avec l'ID spécifié
-			_, err = db.Exec("UPDATE reservations SET Date_arrivee=?, Date_depart=?, Type_tarif=?, ID_client=?, Num_chambre=? WHERE ID_reservation=?", reservation.Date_arrivee, reservation.Date_depart, reservation.Type_tarif, reservation.ID_client, reservation.Num_chambre, reservationID)
+			// Insérer la réservation dans la base de données
+			stmt, err := db.Prepare("INSERT INTO reservation(Date_arrivee, Date_depart, Type_tarif, Id_client, Num_chambre, Telephone_client) VALUES (?, ?, ?, ?, ?, ?)")
 			if err != nil {
-				log.Fatal(err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer stmt.Close()
+
+			_, err = stmt.Exec(res.Date_arrivee, res.Date_depart, res.Type_tarif, res.Id_client, res.Num_chambre)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 
-			// Récupérez la réservation mise à jour de la base de données et encodez-la en JSON
-			updatedReservation := Reservation{}
-			err = db.QueryRow("SELECT * FROM reservations WHERE ID_reservation=?", reservationID).Scan(&updatedReservation.ID_reservation, &updatedReservation.Date_arrivee, &updatedReservation.Date_depart, &updatedReservation.Type_tarif, &updatedReservation.ID_client, &updatedReservation.Num_chambre)
+			// Renvoyer la réservation ajoutée avec un code de statut HTTP 201 Created
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(res)
+		} else if r.Method == "DELETE" {
+			// Récupérer l'ID de la réservation dans l'URL
+			idStr := strings.TrimPrefix(r.URL.Path, "/reservations/")
+			id, err := strconv.Atoi(idStr)
 			if err != nil {
-				log.Fatal(err)
-			}
-			responseJSON, err := json.Marshal(updatedReservation)
-			if err != nil {
-				log.Fatal(err)
+				http.Error(w, "Invalid ID", http.StatusBadRequest)
+				return
 			}
 
-			// Renvoyer la réservation mise à jour
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write(responseJSON)
-		} else {
-			// Si la méthode HTTP n'est pas PUT, renvoyez une erreur "Méthode non autorisée"
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			// Supprimer la réservation correspondante dans la base de données
+			result, err := db.Exec("DELETE FROM reservation WHERE Id_reservation = ?", id)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Vérifier si la suppression a affecté une ligne
+			rowsAffected, err := result.RowsAffected()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if rowsAffected == 0 {
+				http.Error(w, "Reservation not found", http.StatusNotFound)
+				return
+			}
+
+			// Envoyer une réponse de succès
+			w.WriteHeader(http.StatusNoContent)
+		} else // Vérifiez que la méthode est PUT
+		if r.Method == "PUT" {
+			// Récupérez l'ID de la réservation à mettre à jour à partir de la requête URL
+			vars := mux.Vars(r)
+			reservationID, err := strconv.Atoi(vars["id_reservation"])
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			// Récupérez le corps de la requête JSON
+			var updatedReservation reservation
+			err = json.NewDecoder(r.Body).Decode(&updatedReservation)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			// Mettez à jour la réservation dans la base de données
+			result, err := db.Exec("UPDATE reservation SET date_arrivee = ?, date_depart = ?, type_tarif = ?, id_client = ?, num_chambre = ? WHERE id_reservation = ?", updatedReservation.Date_arrivee, updatedReservation.Date_depart, updatedReservation.Type_tarif, updatedReservation.Id_client, updatedReservation.Num_chambre, reservationID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Vérifiez que la réservation a bien été mise à jour
+			rowsAffected, err := result.RowsAffected()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			if rowsAffected == 0 {
+				http.Error(w, "Réservation introuvable", http.StatusNotFound)
+				return
+			}
+
+			// Renvoyez une réponse JSON avec l'ID de la réservation mise à jour
+			response := map[string]int{"id_reservation": reservationID}
+			json.NewEncoder(w).Encode(response)
 		}
 	})
+	http.HandleFunc("/reservations/{id_reservation}", func(w http.ResponseWriter, r *http.Request) {
+		// Récupérez l'identifiant de la réservation à partir des variables de chemin
+		vars := mux.Vars(r)
+		id, err := strconv.Atoi(vars["id_reservation"])
+		if err != nil {
+			http.Error(w, "Invalid reservation ID", http.StatusBadRequest)
+			return
+		}
+
+		// Récupérez la réservation à partir de la base de données
+		rows, err := db.Query("SELECT * FROM reservation WHERE ID_reservation = ?", id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		// Vérifiez que la réservation a été trouvée
+		if !rows.Next() {
+			http.Error(w, "Reservation not found", http.StatusNotFound)
+			return
+		}
+
+		// Parcourez les résultats de la requête et créez une instance de réservation
+		var res reservation
+		err = rows.Scan(&res.Id_reservation, &res.Date_arrivee, &res.Date_depart, &res.Type_tarif, &res.Id_client, &res.Num_chambre)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Renvoyer la réservation sous forme de réponse JSON
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(res)
+	})
+	http.HandleFunc("/chambres", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" {
+			// Récupérez toutes les chambres de la base de données
+			rows, err := db.Query("SELECT Num_chambre, Id_etage, Idcategorie, Nom_hotel FROM chambre")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer rows.Close()
+
+			// Parcourez les résultats de la requête et créez une liste de chambres
+			chambres := []chambre{}
+			for rows.Next() {
+				var chambre chambre
+				err := rows.Scan(&chambre.Num_chambre, &chambre.Id_etage, &chambre.Idcategorie, &chambre.Nom_hotel)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				chambres = append(chambres, chambre)
+			}
+			if err := rows.Err(); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Créez une réponse JSON avec la liste des chambres
+			json.NewEncoder(w).Encode(chambres)
+		} else if r.Method == "POST" {
+			// Récupérez le corps de la requête JSON
+			var newChambre chambre
+			err := json.NewDecoder(r.Body).Decode(&newChambre)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			// Insérez la nouvelle chambre dans la base de données
+			result, err := db.Exec("INSERT INTO chambre (num_chambre, id_etage, id_categorie, nom_chambre) VALUES (?, ?, ?, ?)", newChambre.Num_chambre, newChambre.Id_etage, newChambre.Idcategorie, newChambre.Nom_hotel)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Récupérez l'ID de la nouvelle chambre insérée
+			newID, err := result.LastInsertId()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Renvoyez une réponse JSON avec l'ID de la nouvelle chambre
+			response := map[string]int64{"num_chambre": newID}
+			json.NewEncoder(w).Encode(response)
+		} else {
+			http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+		}
+
+	})
+
+	// Lancez le serveur HTTP
+	http.ListenAndServe(":8080", nil)
 }
