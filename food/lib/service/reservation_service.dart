@@ -17,7 +17,7 @@ class ReservationService extends MyService{
   ];
   // permet d'ajouter un nouveau client
   Future<MyReservation> addReservation(MyReservation myReservation) async{
-    // return  postRequest<MyClient>(
+    ///return  postRequest<MyClient>(
     //   url: '/clients',
     //   body:myClient.toMap(),
     //   success: (json){

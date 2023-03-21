@@ -33,7 +33,7 @@ class ClientService extends MyService{
     //   url: '/clients',
     //   success: (json){
     //     List<MyClient> list=jsonDecode(json);
-    //     return list.map((e) => MyClient.fromJson(e)).toList();
+    //     return list.map((e) => MyClient.fromJson()).toList();
     //   }
     // );
 

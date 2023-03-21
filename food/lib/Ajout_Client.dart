@@ -214,7 +214,7 @@ class _loginFormState extends State<loginForm> {
              child: TextField(
               controller: widget.controllerNom,
               decoration:InputDecoration(
-                labelText:'Entrer la date darriver',
+                labelText:'Entrer la nom',
                 labelStyle: TextStyle(
                   color:Colors.grey[400],
                 ),
@@ -231,7 +231,7 @@ class _loginFormState extends State<loginForm> {
                   labelStyle:TextStyle(
                     color:Colors.grey[400],
                 ),
-                labelText:'entrer la date de depart',
+                labelText:'entrer le prenom',
                 suffixIcon:IconButton(
                     icon:Icon(
                       Icons.visibility,
